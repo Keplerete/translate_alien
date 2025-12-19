@@ -1,335 +1,628 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Universe Craft Mod</title>
-  <style>
-    /* Общие стили */
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(to bottom, #000000 0%, #070734 100%);
-      color: #fff;
-      overflow-x: hidden;
-    }
-    
-    /* Фон: звёзды и туманность */
-    .space {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: -2;
-      overflow: hidden;
-      perspective: 2000px;
-    }
-    .nebula {
-      position: fixed;
-      width: 1200px;
-      height: 800px;
-      background: radial-gradient(ellipse at center, rgba(128,0,128,0.4), transparent 70%),
-                  radial-gradient(ellipse at center, rgba(255,20,147,0.3), transparent 70%);
-      transform: translate(-50%, -50%);
-      filter: blur(50px);
-      opacity: 0.7;
-      z-index: -1;
-    }
-    .stars-container {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      transform-style: preserve-3d;
-    }
-    .star {
-      position: absolute;
-      background: rgba(255,255,255,0.8);
-      border-radius: 50%;
-      animation: twinkle var(--duration) ease-in-out infinite;
-      box-shadow: 0 0 5px rgba(255,255,255,0.5);
-    }
-    .star::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle, rgba(255,255,255,0.8) 10%, transparent 70%);
-      transform: translate(-50%, -50%);
-    }
-    @keyframes twinkle {
-      0%, 100% { opacity: 0.4; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.2); }
-    }
-    
-    /* Обёртка для основного контента */
-    .page-wrapper {
-      transition: filter 0.5s ease;
-    }
-    .page-wrapper.blurred {
-      filter: blur(10px);
-    }
-    
-    /* Анимация появления текста */
-    .fly-in {
-      opacity: 0;
-      animation: flyIn 1.5s ease forwards;
-    }
-    @keyframes flyIn {
-      0% { transform: translateY(-50px); opacity: 0; }
-      100% { transform: translateY(0); opacity: 1; }
-    }
-    
-    /* Шапка */
-    header {
-      background: linear-gradient(135deg, rgba(46,125,50,0.9), rgba(0,128,128,0.7));
-      padding: 20px;
-      text-align: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-      position: relative;
-      z-index: 2;
-      backdrop-filter: blur(5px);
-      border-bottom: 2px solid rgba(255,255,255,0.2);
-    }
-    h1 {
-      margin: 0;
-      font-size: 2.5em;
-      animation: headerGlow 2s infinite;
-    }
-    @keyframes headerGlow {
-      0% { text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #f0f, 0 0 40px #f0f; }
-      50% { text-shadow: 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #ff00ff, 0 0 50px #ff00ff; }
-      100% { text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #f0f, 0 0 40px #f0f; }
-    }
-    
-    /* Гамбургер */
-    .hamburger {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 35px;
-      height: 25px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      cursor: pointer;
-      z-index: 3;
-      transition: transform 0.5s ease;
-    }
-    .hamburger span {
-      display: block;
-      height: 4px;
-      background: linear-gradient(90deg, #fff, #ccc);
-      border-radius: 2px;
-      transition: all 0.5s ease;
-    }
-    .hamburger:hover span {
-      transform: scaleX(1.1);
-    }
-    .hamburger.open span:nth-child(1) {
-      transform: translateY(10px) rotate(45deg);
-    }
-    .hamburger.open span:nth-child(2) {
-      opacity: 0;
-    }
-    .hamburger.open span:nth-child(3) {
-      transform: translateY(-10px) rotate(-45deg);
-    }
-    
-    /* Меню */
-    .menu {
-      position: fixed;
-      top: 0;
-      right: -300px;
-      width: 250px;
-      height: 100%;
-      background: linear-gradient(135deg, rgba(51,51,51,0.95), rgba(20,20,40,0.9));
-      padding: 20px;
-      transition: right 0.6s ease;
-      z-index: 4;
-      backdrop-filter: blur(10px);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .menu.active {
-      right: 0;
-    }
-    .close-menu {
-      align-self: flex-end;
-      font-size: 24px;
-      cursor: pointer;
-      color: #fff;
-      margin-bottom: 20px;
-      transition: transform 0.4s ease;
-    }
-    .close-menu:hover {
-      transform: scale(1.1);
-    }
-    .version {
-      margin-bottom: 20px;
-      padding: 10px;
-      text-align: center;
-      font-size: 1.1em;
-      color: #fff;
-      background: rgba(0,0,0,0.3);
-      border: 1px solid rgba(255,255,255,0.4);
-      border-radius: 5px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-      width: 100%;
-    }
-    .menu a {
-      display: block;
-      color: #fff;
-      text-decoration: none;
-      font-size: 1.2em;
-      margin: 20px 0;
-      padding: 10px;
-      background-color: rgba(255,215,0,0.9);
-      border-radius: 5px;
-      text-align: center;
-      transition: all 0.4s ease;
-      width: 100%;
-    }
-    .menu a:hover {
-      background-color: rgba(255,193,7,0.9);
-      border: 2px solid #fff;
-      transform: scale(1.05);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    }
-    
-    /* Контент */
-    .content {
-      max-width: 900px;
-      margin: 40px auto;
-      padding: 30px;
-      background: rgba(20,20,40,0.7);
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 15px;
-      animation: fadeInUp 1.2s ease;
-      position: relative;
-      z-index: 2;
-      backdrop-filter: blur(8px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-    }
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    /* Футер */
-    footer {
-      background: linear-gradient(135deg, rgba(26,26,26,0.8), rgba(0,0,30,0.7));
-      padding: 15px;
-      text-align: center;
-      position: relative;
-      z-index: 2;
-      backdrop-filter: blur(12px);
-      border-radius: 10px;
-      margin: 20px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-      font-size: 0.9em;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Переводчик инопланетного языка</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #0a0e17;
+            color: #e0f0ff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(28, 58, 173, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(138, 43, 226, 0.1) 0%, transparent 20%);
+        }
+        
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: #fff;
+            border-radius: 50%;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 3.2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #6ee7b7, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a5b4fc;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+        
+        .translator-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        @media (min-width: 992px) {
+            .translator-container {
+                flex-direction: row;
+            }
+        }
+        
+        .input-section, .output-section {
+            flex: 1;
+            background: rgba(16, 23, 41, 0.8);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .input-section:hover, .output-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: #6ee7b7;
+            font-size: 1.5rem;
+        }
+        
+        .section-title i {
+            font-size: 1.8rem;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 200px;
+            background: rgba(10, 14, 23, 0.8);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            color: #e0f0ff;
+            font-size: 1.1rem;
+            padding: 15px;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        button {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        #translate-btn {
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            color: white;
+        }
+        
+        #translate-btn:hover {
+            background: linear-gradient(90deg, #2563eb, #7c3aed);
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+        
+        #clear-btn {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        #clear-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+            transform: scale(1.05);
+        }
+        
+        .output-text {
+            background: rgba(10, 14, 23, 0.8);
+            border: 2px solid rgba(139, 92, 246, 0.3);
+            border-radius: 12px;
+            min-height: 200px;
+            padding: 15px;
+            font-size: 1.3rem;
+            line-height: 1.5;
+            color: #c4b5fd;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .info-section {
+            background: rgba(16, 23, 41, 0.8);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(110, 231, 183, 0.2);
+        }
+        
+        h2 {
+            color: #6ee7b7;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+        
+        .language-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .info-card {
+            background: rgba(10, 14, 23, 0.6);
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .info-card h3 {
+            color: #a5b4fc;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-card p {
+            line-height: 1.6;
+            color: #cbd5e1;
+        }
+        
+        .alien-alphabet {
+            margin-top: 25px;
+        }
+        
+        .alphabet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .alphabet-item {
+            background: rgba(10, 14, 23, 0.8);
+            border-radius: 8px;
+            padding: 12px 5px;
+            text-align: center;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .alphabet-item:hover {
+            transform: translateY(-5px);
+            background: rgba(139, 92, 246, 0.2);
+        }
+        
+        .alphabet-human {
+            font-size: 1.2rem;
+            color: #6ee7b7;
+            font-weight: bold;
+        }
+        
+        .alphabet-alien {
+            font-size: 1.5rem;
+            color: #c4b5fd;
+            margin-top: 5px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 40px;
+            border-top: 1px solid rgba(59, 130, 246, 0.2);
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+            }
+        }
+        
+        .history {
+            margin-top: 20px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            background: rgba(10, 14, 23, 0.6);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-left: 3px solid #8b5cf6;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
 <body>
-  <!-- Фон: звёзды и туманность -->
-  <div class="space">
-    <div class="nebula"></div>
-    <div class="stars-container" id="stars-container"></div>
-  </div>
-  
-  <!-- Меню -->
-  <div class="menu" id="menu">
-    <div class="close-menu" id="close-menu">✖</div>
-    <div class="version">Версия сайта – v1.00 Website</div>
-    <a href="index.html">Главная страница</a>
-    <a href="download.html">Скачать</a>
-  </div>
-  
-  <!-- Обёртка для основного контента -->
-  <div class="page-wrapper">
-    <!-- Header с анимацией fly-in и космическим свечением -->
-    <header>
-      <h1 class="fly-in">Universe Craft Mod</h1>
-      <div class="hamburger" id="hamburger">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-    </header>
+    <!-- Анимированные звезды на фоне -->
+    <div class="stars" id="stars"></div>
     
-    <!-- Контент с анимацией fly-in -->
-    <div class="content">
-      <h2 class="fly-in">О моде Universe Craft</h2>
-      <p class="fly-in">
-        Universe Craft — уникальный мод для Minecraft Java Edition, который значительно расширяет возможности игры. Он создан опытным автором OHNIXDOX777 и позволяет легко добавлять новые блоки, предметы и инструменты, чтобы игра стала интереснее и удобнее. Благодаря этому моду вы получаете дополнительные возможности для строительства, добычи ресурсов и сражений, а также новые режимы взаимодействия с игровым миром.
-      </p>
-      <p class="fly-in">
-        В моде реализованы простые и понятные механики: новые руды, инструменты и блоки позволяют создавать уникальные постройки, а дополнительное оружие и броня дают возможность улучшить боевые навыки. Пользователи оценят стабильную работу, удобное управление и регулярные обновления, которые делают игру более разнообразной.
-      </p>
-      <p class="fly-in">
-        Universe Craft предлагает интуитивный интерфейс и подробные инструкции, что позволяет быстро освоиться даже новичкам. Присоединяйтесь к сообществу, делитесь своими достижениями и получайте удовольствие от новых игровых возможностей. Этот мод создан для того, чтобы сделать игру проще и веселее – всё понятно, доступно и интересно!
-      </p>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-globe-americas"></i> Переводчик инопланетного языка</h1>
+            <p class="subtitle">Переводите текст с человеческого на язык цивилизации Зета-Ретикули. Алгоритм основан на криптографических принципах, используемых инопланетными лингвистами.</p>
+        </header>
+        
+        <main>
+            <div class="translator-container">
+                <div class="input-section">
+                    <div class="section-title">
+                        <i class="fas fa-comment-alt"></i>
+                        <h2>Исходный текст</h2>
+                    </div>
+                    <textarea id="input-text" placeholder="Введите текст для перевода на инопланетный язык...">Привет, землянин! Как дела на твоей планете?</textarea>
+                    <div class="controls">
+                        <button id="translate-btn" class="pulse">
+                            <i class="fas fa-language"></i>
+                            Перевести
+                        </button>
+                        <button id="clear-btn">
+                            <i class="fas fa-broom"></i>
+                            Очистить
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="output-section">
+                    <div class="section-title">
+                        <i class="fas fa-rocket"></i>
+                        <h2>Инопланетный перевод</h2>
+                    </div>
+                    <div class="output-text" id="output-text">
+                        Перевод появится здесь...
+                    </div>
+                    <div class="history">
+                        <div class="section-title" style="font-size: 1.2rem; margin-top: 15px;">
+                            <i class="fas fa-history"></i>
+                            <h3>История переводов</h3>
+                        </div>
+                        <div id="history-list"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h2><i class="fas fa-info-circle"></i> О языке Зета-Ретикули</h2>
+                <div class="language-info">
+                    <div class="info-card">
+                        <h3><i class="fas fa-brain"></i> Особенности языка</h3>
+                        <p>Язык основан на нелинейной морфологии и использует тональные модуляции, недоступные человеческому слуху. Графемы представляют собой многомерные символы, передающие концепции целиком, а не по буквам.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-satellite"></i> Происхождение</h3>
+                        <p>Язык цивилизации Зета-Ретикули, открытый в результате расшифровки сигналов из звездной системы Ретикулум. Первый контакт был установлен в 2025 году через проект SETI.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-code"></i> Алгоритм перевода</h3>
+                        <p>Наш переводчик использует квантово-лингвистический алгоритм, имитирующий мышление ретикулян. Текст преобразуется через многомерные матрицы, добавляя уникальные инопланетные морфемы.</p>
+                    </div>
+                </div>
+                
+                <div class="alien-alphabet">
+                    <h2><i class="fas fa-font"></i> Алфавит Зета-Ретикули</h2>
+                    <div class="alphabet-grid" id="alphabet-grid">
+                        <!-- Алфавит будет сгенерирован скриптом -->
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>© 2023 Переводчик инопланетного языка. Все права защищены Галактической лингвистической ассоциацией.</p>
+            <p>Данный инструмент предназначен для исследовательских целей. Избегайте отправки конфиденциальной информации.</p>
+        </footer>
     </div>
     
-    <!-- Футер с обновлённым годом -->
-    <footer>
-      <p>© 2025 Universe Craft. Все права защищены</p>
-    </footer>
-  </div>
-  
-  <script>
-    // Функция создания звёзд – все звёзды белые
-    function createStars() {
-      const container = document.getElementById('stars-container');
-      const starCount = 300;
-      for (let i = 0; i < starCount; i++) {
-        const star = document.createElement('div');
-        star.className = 'star';
-        const size = Math.random() * 3 + 1;
-        const x = Math.random() * 100;
-        const y = Math.random() * 100;
-        const duration = Math.random() * 3 + 2;
-        star.style.cssText = `
-          width: ${size}px;
-          height: ${size}px;
-          left: ${x}%;
-          top: ${y}%;
-          --duration: ${duration}s;
-        `;
-        container.appendChild(star);
-      }
-    }
-    
-    window.addEventListener('load', () => {
-      createStars();
-      // Генерируем случайное положение туманности
-      const nebula = document.querySelector('.nebula');
-      nebula.style.top = `${Math.random() * 80 + 10}%`;
-      nebula.style.left = `${Math.random() * 80 + 10}%`;
-    });
-    
-    // Открытие/закрытие меню: при клике на гамбургер или кнопку закрытия
-    const hamburger = document.getElementById('hamburger');
-    const menu = document.getElementById('menu');
-    const closeMenu = document.getElementById('close-menu');
-    const pageWrapper = document.querySelector('.page-wrapper');
-    
-    hamburger.addEventListener('click', () => {
-      menu.classList.add('active');
-      hamburger.classList.add('open');
-      pageWrapper.classList.add('blurred');
-    });
-    
-    closeMenu.addEventListener('click', () => {
-      menu.classList.remove('active');
-      hamburger.classList.remove('open');
-      pageWrapper.classList.remove('blurred');
-    });
-  </script>
+    <script>
+        // Создание звездного фона
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const starCount = 150;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                
+                // Случайный размер и позиция
+                const size = Math.random() * 3 + 1;
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.left = `${posX}%`;
+                star.style.top = `${posY}%`;
+                
+                // Мерцание
+                const brightness = Math.random() * 0.7 + 0.3;
+                star.style.opacity = brightness;
+                star.style.animation = `twinkle ${Math.random() * 5 + 3}s infinite alternate`;
+                
+                starsContainer.appendChild(star);
+            }
+            
+            // Добавляем ключевые кадры для анимации мерцания
+            const styleSheet = document.createElement('style');
+            styleSheet.textContent = `
+                @keyframes twinkle {
+                    0%, 100% { opacity: 0.3; }
+                    50% { opacity: 1; }
+                }
+            `;
+            document.head.appendChild(styleSheet);
+        }
+        
+        // Алфавит для перевода
+        const alienAlphabet = {
+            'а': '⟁', 'б': '⏃', 'в': '⌇', 'г': '⍀', 'д': '⋔',
+            'е': '⟒', 'ё': '⏚', 'ж': '⍾', 'з': '⏅', 'и': '⊑',
+            'й': '⍜', 'к': '⋏', 'л': '⎅', 'м': '⏁', 'н': '⋔',
+            'о': '○', 'п': '⌿', 'р': '⍀', 'с': '⌇', 'т': '⏃',
+            'у': '⎍', 'ф': '⌰', 'х': '⋈', 'ц': '⍙', 'ч': '⍗',
+            'ш': '⌖', 'щ': '⍢', 'ъ': '⍎', 'ы': '⊬', 'ь': '⟟',
+            'э': '⍻', 'ю': '⍦', 'я': '⍤',
+            'a': '⏚', 'b': '⎍', 'c': '⊂', 'd': '⟐', 'e': '⋿',
+            'f': '⎎', 'g': '☊', 'h': '⊓', 'i': '⍳', 'j': '⍝',
+            'k': '⋔', 'l': '⌰', 'm': '⍔', 'n': '⋃', 'o': '⍥',
+            'p': '⍀', 'q': '⍾', 'r': '⍴', 's': '⌇', 't': '⏁',
+            'u': '⍉', 'v': '√', 'w': '⍵', 'x': '⍫', 'y': '⊿',
+            'z': '⏃', ' ': '␣', '!': '⌗', '?': '⍰', '.': '∙',
+            ',': '⍮', ':': '∷', ';': '⍵', '-': '⍤', '\'': '⍝'
+        };
+        
+        // Генерация алфавита на странице
+        function generateAlphabet() {
+            const alphabetGrid = document.getElementById('alphabet-grid');
+            
+            for (const [human, alien] of Object.entries(alienAlphabet)) {
+                const alphabetItem = document.createElement('div');
+                alphabetItem.className = 'alphabet-item';
+                
+                const humanChar = document.createElement('div');
+                humanChar.className = 'alphabet-human';
+                humanChar.textContent = human === ' ' ? 'ПРОБЕЛ' : human.toUpperCase();
+                
+                const alienChar = document.createElement('div');
+                alienChar.className = 'alphabet-alien';
+                alienChar.textContent = alien;
+                
+                alphabetItem.appendChild(humanChar);
+                alphabetItem.appendChild(alienChar);
+                alphabetGrid.appendChild(alphabetItem);
+            }
+        }
+        
+        // Функция перевода на инопланетный язык
+        function translateToAlien(text) {
+            let result = '';
+            
+            for (let char of text.toLowerCase()) {
+                if (alienAlphabet[char]) {
+                    result += alienAlphabet[char];
+                } else {
+                    // Для символов, которых нет в алфавите, оставляем как есть
+                    result += char;
+                }
+            }
+            
+            // Добавляем инопланетные суффиксы для реалистичности
+            const alienSuffixes = [' ⏚⍀⍥⋔', ' ⟒⋃⍀⍥', ' ⏃⍀⋔⍥', ' ⍀⍥⋔'];
+            const randomSuffix = alienSuffixes[Math.floor(Math.random() * alienSuffixes.length)];
+            
+            // Добавляем префикс и суффикс в 30% случаев
+            if (Math.random() > 0.7) {
+                result = '⍾⍀⍥ ' + result + randomSuffix;
+            }
+            
+            return result;
+        }
+        
+        // Сохранение в историю
+        function saveToHistory(original, translation) {
+            const historyList = document.getElementById('history-list');
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            
+            // Ограничиваем длину текста для отображения
+            const shortOriginal = original.length > 30 ? original.substring(0, 30) + '...' : original;
+            const shortTranslation = translation.length > 30 ? translation.substring(0, 30) + '...' : translation;
+            
+            historyItem.innerHTML = `<strong>${shortOriginal}</strong> → ${shortTranslation}`;
+            
+            // Добавляем в начало списка
+            if (historyList.firstChild) {
+                historyList.insertBefore(historyItem, historyList.firstChild);
+            } else {
+                historyList.appendChild(historyItem);
+            }
+            
+            // Ограничиваем историю 5 последними переводами
+            while (historyList.children.length > 5) {
+                historyList.removeChild(historyList.lastChild);
+            }
+            
+            // Сохраняем в localStorage
+            const history = JSON.parse(localStorage.getItem('alienTranslatorHistory')) || [];
+            history.unshift({
+                original: original,
+                translation: translation,
+                timestamp: new Date().toLocaleString()
+            });
+            
+            // Сохраняем только последние 10 записей
+            if (history.length > 10) {
+                history.pop();
+            }
+            
+            localStorage.setItem('alienTranslatorHistory', JSON.stringify(history));
+        }
+        
+        // Загрузка истории из localStorage
+        function loadHistory() {
+            const history = JSON.parse(localStorage.getItem('alienTranslatorHistory')) || [];
+            const historyList = document.getElementById('history-list');
+            
+            history.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                
+                const shortOriginal = item.original.length > 30 ? item.original.substring(0, 30) + '...' : item.original;
+                const shortTranslation = item.translation.length > 30 ? item.translation.substring(0, 30) + '...' : item.translation;
+                
+                historyItem.innerHTML = `<strong>${shortOriginal}</strong> → ${shortTranslation}`;
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            createStars();
+            generateAlphabet();
+            loadHistory();
+            
+            // Получаем элементы DOM
+            const inputText = document.getElementById('input-text');
+            const outputText = document.getElementById('output-text');
+            const translateBtn = document.getElementById('translate-btn');
+            const clearBtn = document.getElementById('clear-btn');
+            
+            // Обработчик кнопки перевода
+            translateBtn.addEventListener('click', function() {
+                const text = inputText.value.trim();
+                
+                if (text) {
+                    // Анимация кнопки
+                    translateBtn.innerHTML = '<i class="fas fa-satellite"></i> Перевод...';
+                    translateBtn.disabled = true;
+                    
+                    // Имитация задержки перевода
+                    setTimeout(() => {
+                        const translation = translateToAlien(text);
+                        outputText.textContent = translation;
+                        outputText.style.color = '#c4b5fd';
+                        
+                        // Сохраняем в историю
+                        saveToHistory(text, translation);
+                        
+                        // Возвращаем исходный вид кнопки
+                        translateBtn.innerHTML = '<i class="fas fa-language"></i> Перевести';
+                        translateBtn.disabled = false;
+                    }, 800);
+                } else {
+                    outputText.textContent = 'Введите текст для перевода!';
+                    outputText.style.color = '#fca5a5';
+                }
+            });
+            
+            // Обработчик кнопки очистки
+            clearBtn.addEventListener('click', function() {
+                inputText.value = '';
+                outputText.textContent = 'Перевод появится здесь...';
+                outputText.style.color = '#c4b5fd';
+                inputText.focus();
+            });
+            
+            // Автоперевод при загрузке страницы
+            const initialText = inputText.value.trim();
+            if (initialText) {
+                const translation = translateToAlien(initialText);
+                outputText.textContent = translation;
+                outputText.style.color = '#c4b5fd';
+            }
+            
+            // Добавляем возможность перевода по нажатию Enter с зажатым Ctrl
+            inputText.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    translateBtn.click();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
