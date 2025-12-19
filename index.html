@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Переводчик инопланетного языка</title>
+    <title>Улучшенный переводчик инопланетного языка</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -65,6 +65,39 @@
             color: #a5b4fc;
             max-width: 600px;
             margin: 0 auto 30px;
+        }
+        
+        .direction-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .direction-btn {
+            padding: 12px 24px;
+            background: rgba(16, 23, 41, 0.8);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            color: #a5b4fc;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .direction-btn.active {
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            color: white;
+            border-color: #3b82f6;
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .direction-btn:hover:not(.active) {
+            border-color: #6ee7b7;
+            color: #6ee7b7;
         }
         
         .translator-container {
@@ -132,6 +165,7 @@
             justify-content: center;
             gap: 15px;
             margin: 30px 0;
+            flex-wrap: wrap;
         }
         
         button {
@@ -166,6 +200,17 @@
         
         #clear-btn:hover {
             background: rgba(239, 68, 68, 0.3);
+            transform: scale(1.05);
+        }
+        
+        #reverse-btn {
+            background: rgba(110, 231, 183, 0.2);
+            color: #6ee7b7;
+            border: 1px solid rgba(110, 231, 183, 0.3);
+        }
+        
+        #reverse-btn:hover {
+            background: rgba(110, 231, 183, 0.3);
             transform: scale(1.05);
         }
         
@@ -301,11 +346,54 @@
             margin-bottom: 8px;
             border-left: 3px solid #8b5cf6;
             font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .history-direction {
+            font-size: 0.8rem;
+            color: #6ee7b7;
+            background: rgba(110, 231, 183, 0.2);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        
+        .translation-type {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            font-size: 0.9rem;
+            margin-left: 10px;
+            color: #93c5fd;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: rgba(16, 23, 41, 0.95);
+            border-radius: 12px;
+            border-left: 4px solid #6ee7b7;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.5s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
         }
         
         @media (max-width: 768px) {
             h1 {
                 font-size: 2.5rem;
+            }
+            
+            .direction-controls {
+                flex-direction: column;
             }
             
             .controls {
@@ -323,24 +411,44 @@
     <!-- Анимированные звезды на фоне -->
     <div class="stars" id="stars"></div>
     
+    <!-- Уведомление -->
+    <div class="notification" id="notification">
+        <div id="notification-text"></div>
+    </div>
+    
     <div class="container">
         <header>
-            <h1><i class="fas fa-globe-americas"></i> Переводчик инопланетного языка</h1>
-            <p class="subtitle">Переводите текст с человеческого на язык цивилизации Зета-Ретикули. Алгоритм основан на криптографических принципах, используемых инопланетными лингвистами.</p>
+            <h1><i class="fas fa-globe-americas"></i> Улучшенный переводчик инопланетного языка</h1>
+            <p class="subtitle">Переводите текст с человеческого на язык Зета-Ретикули и обратно. Детерминированный алгоритм гарантирует одинаковый результат при повторном переводе.</p>
+            
+            <div class="direction-controls">
+                <button class="direction-btn active" id="to-alien-btn">
+                    <i class="fas fa-arrow-right"></i>
+                    С русского на инопланетный
+                </button>
+                <button class="direction-btn" id="from-alien-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    С инопланетного на русский
+                </button>
+            </div>
         </header>
         
         <main>
             <div class="translator-container">
                 <div class="input-section">
                     <div class="section-title">
-                        <i class="fas fa-comment-alt"></i>
-                        <h2>Исходный текст</h2>
+                        <i class="fas fa-comment-alt" id="input-icon"></i>
+                        <h2 id="input-title">Исходный текст (русский)</h2>
                     </div>
                     <textarea id="input-text" placeholder="Введите текст для перевода на инопланетный язык...">Привет, землянин! Как дела на твоей планете?</textarea>
                     <div class="controls">
                         <button id="translate-btn" class="pulse">
                             <i class="fas fa-language"></i>
-                            Перевести
+                            <span id="translate-text">Перевести на инопланетный</span>
+                        </button>
+                        <button id="reverse-btn">
+                            <i class="fas fa-exchange-alt"></i>
+                            Обратить направление
                         </button>
                         <button id="clear-btn">
                             <i class="fas fa-broom"></i>
@@ -351,8 +459,8 @@
                 
                 <div class="output-section">
                     <div class="section-title">
-                        <i class="fas fa-rocket"></i>
-                        <h2>Инопланетный перевод</h2>
+                        <i class="fas fa-rocket" id="output-icon"></i>
+                        <h2 id="output-title">Инопланетный перевод</h2>
                     </div>
                     <div class="output-text" id="output-text">
                         Перевод появится здесь...
@@ -368,24 +476,24 @@
             </div>
             
             <div class="info-section">
-                <h2><i class="fas fa-info-circle"></i> О языке Зета-Ретикули</h2>
+                <h2><i class="fas fa-info-circle"></i> Улучшенный алгоритм перевода</h2>
                 <div class="language-info">
                     <div class="info-card">
-                        <h3><i class="fas fa-brain"></i> Особенности языка</h3>
-                        <p>Язык основан на нелинейной морфологии и использует тональные модуляции, недоступные человеческому слуху. Графемы представляют собой многомерные символы, передающие концепции целиком, а не по буквам.</p>
+                        <h3><i class="fas fa-brain"></i> Детерминированный перевод</h3>
+                        <p>Одинаковый исходный текст всегда дает одинаковый результат перевода. Исправлена проблема с разными результатами при повторном переводе.</p>
                     </div>
                     <div class="info-card">
-                        <h3><i class="fas fa-satellite"></i> Происхождение</h3>
-                        <p>Язык цивилизации Зета-Ретикули, открытый в результате расшифровки сигналов из звездной системы Ретикулум. Первый контакт был установлен в 2025 году через проект SETI.</p>
+                        <h3><i class="fas fa-exchange-alt"></i> Обратный перевод</h3>
+                        <p>Теперь можно переводить как с русского на инопланетный, так и с инопланетного на русский язык. Алгоритм поддерживает двусторонний перевод.</p>
                     </div>
                     <div class="info-card">
-                        <h3><i class="fas fa-code"></i> Алгоритм перевода</h3>
-                        <p>Наш переводчик использует квантово-лингвистический алгоритм, имитирующий мышление ретикулян. Текст преобразуется через многомерные матрицы, добавляя уникальные инопланетные морфемы.</p>
+                        <h3><i class="fas fa-code"></i> Улучшенный алгоритм</h3>
+                        <p>Расширенный словарь, поддержка большего количества символов и знаков препинания. Добавлена проверка на корректность инопланетного текста.</p>
                     </div>
                 </div>
                 
                 <div class="alien-alphabet">
-                    <h2><i class="fas fa-font"></i> Алфавит Зета-Ретикули</h2>
+                    <h2><i class="fas fa-font"></i> Алфавит Зета-Ретикули <span class="translation-type" id="alphabet-type">русский → инопланетный</span></h2>
                     <div class="alphabet-grid" id="alphabet-grid">
                         <!-- Алфавит будет сгенерирован скриптом -->
                     </div>
@@ -394,7 +502,7 @@
         </main>
         
         <footer>
-            <p>© 2023 Переводчик инопланетного языка. Все права защищены Галактической лингвистической ассоциацией.</p>
+            <p>© 2023 Улучшенный переводчик инопланетного языка. Все права защищены Галактической лингвистической ассоциацией.</p>
             <p>Данный инструмент предназначен для исследовательских целей. Избегайте отправки конфиденциальной информации.</p>
         </footer>
     </div>
@@ -438,8 +546,9 @@
             document.head.appendChild(styleSheet);
         }
         
-        // Алфавит для перевода
+        // Алфавит для перевода (детерминированный)
         const alienAlphabet = {
+            // Русский алфавит
             'а': '⟁', 'б': '⏃', 'в': '⌇', 'г': '⍀', 'д': '⋔',
             'е': '⟒', 'ё': '⏚', 'ж': '⍾', 'з': '⏅', 'и': '⊑',
             'й': '⍜', 'к': '⋏', 'л': '⎅', 'м': '⏁', 'н': '⋔',
@@ -447,30 +556,161 @@
             'у': '⎍', 'ф': '⌰', 'х': '⋈', 'ц': '⍙', 'ч': '⍗',
             'ш': '⌖', 'щ': '⍢', 'ъ': '⍎', 'ы': '⊬', 'ь': '⟟',
             'э': '⍻', 'ю': '⍦', 'я': '⍤',
+            
+            // Латинский алфавит (для англоязычных пользователей)
             'a': '⏚', 'b': '⎍', 'c': '⊂', 'd': '⟐', 'e': '⋿',
             'f': '⎎', 'g': '☊', 'h': '⊓', 'i': '⍳', 'j': '⍝',
             'k': '⋔', 'l': '⌰', 'm': '⍔', 'n': '⋃', 'o': '⍥',
             'p': '⍀', 'q': '⍾', 'r': '⍴', 's': '⌇', 't': '⏁',
             'u': '⍉', 'v': '√', 'w': '⍵', 'x': '⍫', 'y': '⊿',
-            'z': '⏃', ' ': '␣', '!': '⌗', '?': '⍰', '.': '∙',
-            ',': '⍮', ':': '∷', ';': '⍵', '-': '⍤', '\'': '⍝'
+            'z': '⏃',
+            
+            // Цифры
+            '0': '⓪', '1': '①', '2': '②', '3': '③', '4': '④',
+            '5': '⑤', '6': '⑥', '7': '⑦', '8': '⑧', '9': '⑨',
+            
+            // Специальные символы
+            ' ': '␣', '!': '⌗', '?': '⍰', '.': '∙', ',': '⍮', 
+            ':': '∷', ';': '⍵', '-': '⍤', '\'': '⍝', '"': '⍟',
+            '(': '⏜', ')': '⏝', '[': '⟦', ']': '⟧', '{': '⦃', '}': '⦄',
+            '+': '⊕', '=': '⩵', '*': '⊛', '/': '⧸', '\\': '⧹',
+            '@': '⨀', '#': '⌗', '$': 'Ⓢ', '%': '٪', '&': '⅋',
+            '<': '⋖', '>': '⋗'
         };
+        
+        // Создаем обратный словарь для перевода с инопланетного
+        const reverseAlienAlphabet = {};
+        for (const [human, alien] of Object.entries(alienAlphabet)) {
+            reverseAlienAlphabet[alien] = human;
+        }
+        
+        // Направление перевода: true - с русского на инопланетный, false - с инопланетного на русский
+        let translationDirection = true;
+        
+        // Показать уведомление
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notification-text');
+            
+            notificationText.textContent = message;
+            
+            // Устанавливаем цвет в зависимости от типа
+            if (type === 'error') {
+                notification.style.borderLeftColor = '#ef4444';
+            } else if (type === 'success') {
+                notification.style.borderLeftColor = '#10b981';
+            } else {
+                notification.style.borderLeftColor = '#6ee7b7';
+            }
+            
+            notification.classList.add('show');
+            
+            // Скрываем уведомление через 3 секунды
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Обновить интерфейс в зависимости от направления перевода
+        function updateInterfaceForDirection() {
+            const toAlienBtn = document.getElementById('to-alien-btn');
+            const fromAlienBtn = document.getElementById('from-alien-btn');
+            const inputTitle = document.getElementById('input-title');
+            const outputTitle = document.getElementById('output-title');
+            const inputIcon = document.getElementById('input-icon');
+            const outputIcon = document.getElementById('output-icon');
+            const translateText = document.getElementById('translate-text');
+            const alphabetType = document.getElementById('alphabet-type');
+            
+            if (translationDirection) {
+                // С русского на инопланетный
+                toAlienBtn.classList.add('active');
+                fromAlienBtn.classList.remove('active');
+                inputTitle.textContent = 'Исходный текст (русский)';
+                outputTitle.textContent = 'Инопланетный перевод';
+                inputIcon.className = 'fas fa-comment-alt';
+                outputIcon.className = 'fas fa-rocket';
+                translateText.textContent = 'Перевести на инопланетный';
+                alphabetType.textContent = 'русский → инопланетный';
+                
+                // Обновляем placeholder
+                document.getElementById('input-text').placeholder = 'Введите текст для перевода на инопланетный язык...';
+            } else {
+                // С инопланетного на русский
+                fromAlienBtn.classList.add('active');
+                toAlienBtn.classList.remove('active');
+                inputTitle.textContent = 'Исходный текст (инопланетный)';
+                outputTitle.textContent = 'Русский перевод';
+                inputIcon.className = 'fas fa-rocket';
+                outputIcon.className = 'fas fa-comment-alt';
+                translateText.textContent = 'Перевести на русский';
+                alphabetType.textContent = 'инопланетный → русский';
+                
+                // Обновляем placeholder
+                document.getElementById('input-text').placeholder = 'Введите инопланетный текст для перевода на русский язык...';
+            }
+            
+            // Обновляем алфавит
+            generateAlphabet();
+            
+            // Очищаем поле вывода
+            document.getElementById('output-text').textContent = 'Перевод появится здесь...';
+        }
         
         // Генерация алфавита на странице
         function generateAlphabet() {
             const alphabetGrid = document.getElementById('alphabet-grid');
+            alphabetGrid.innerHTML = '';
             
-            for (const [human, alien] of Object.entries(alienAlphabet)) {
+            // Определяем, какой алфавит показывать
+            const alphabetToShow = translationDirection ? alienAlphabet : reverseAlienAlphabet;
+            const entries = Object.entries(translationDirection ? alienAlphabet : reverseAlienAlphabet);
+            
+            // Ограничиваем количество отображаемых символов для обратного направления
+            // (иначе покажет слишком много из-за дубликатов)
+            const uniqueEntries = [];
+            const seen = new Set();
+            
+            for (const [key, value] of entries) {
+                const displayKey = translationDirection ? key : value;
+                const displayValue = translationDirection ? value : key;
+                
+                // Для обратного направления пропускаем дубликаты
+                if (!translationDirection) {
+                    if (seen.has(displayKey)) continue;
+                    seen.add(displayKey);
+                }
+                
+                uniqueEntries.push([displayKey, displayValue]);
+                
+                // Ограничиваем количество отображаемых символов
+                if (uniqueEntries.length >= 40) break;
+            }
+            
+            // Сортируем для красивого отображения
+            uniqueEntries.sort((a, b) => a[0].localeCompare(b[0]));
+            
+            for (const [key, value] of uniqueEntries) {
                 const alphabetItem = document.createElement('div');
                 alphabetItem.className = 'alphabet-item';
                 
                 const humanChar = document.createElement('div');
                 humanChar.className = 'alphabet-human';
-                humanChar.textContent = human === ' ' ? 'ПРОБЕЛ' : human.toUpperCase();
+                
+                // Для специальных символов показываем их название
+                if (key === ' ') {
+                    humanChar.textContent = 'ПРОБЕЛ';
+                } else if (key === '\n') {
+                    humanChar.textContent = 'ENTER';
+                } else if (key.length > 1) {
+                    humanChar.textContent = key.substring(0, 3);
+                } else {
+                    humanChar.textContent = key.toUpperCase();
+                }
                 
                 const alienChar = document.createElement('div');
                 alienChar.className = 'alphabet-alien';
-                alienChar.textContent = alien;
+                alienChar.textContent = value;
                 
                 alphabetItem.appendChild(humanChar);
                 alphabetItem.appendChild(alienChar);
@@ -478,42 +718,76 @@
             }
         }
         
-        // Функция перевода на инопланетный язык
+        // Функция перевода на инопланетный язык (детерминированная)
         function translateToAlien(text) {
             let result = '';
             
             for (let char of text.toLowerCase()) {
                 if (alienAlphabet[char]) {
                     result += alienAlphabet[char];
+                } else if (char === '\n') {
+                    result += '\n';
                 } else {
                     // Для символов, которых нет в алфавите, оставляем как есть
                     result += char;
                 }
             }
             
-            // Добавляем инопланетные суффиксы для реалистичности
-            const alienSuffixes = [' ⏚⍀⍥⋔', ' ⟒⋃⍀⍥', ' ⏃⍀⋔⍥', ' ⍀⍥⋔'];
-            const randomSuffix = alienSuffixes[Math.floor(Math.random() * alienSuffixes.length)];
-            
-            // Добавляем префикс и суффикс в 30% случаев
-            if (Math.random() > 0.7) {
-                result = '⍾⍀⍥ ' + result + randomSuffix;
+            // Добавляем инопланетные префикс и суфикс (детерминированные)
+            if (text.trim().length > 0) {
+                result = '⍾⍀⍥ ' + result + ' ⏚⍀⍥⋔';
             }
             
             return result;
         }
         
+        // Функция перевода с инопланетного языка на русский
+        function translateFromAlien(text) {
+            let result = '';
+            
+            // Убираем стандартные префикс и суффикс если они есть
+            let cleanText = text.replace(/^⍾⍀⍥ /, '').replace(/ ⏚⍀⍥⋔$/, '');
+            
+            for (let char of cleanText) {
+                if (reverseAlienAlphabet[char]) {
+                    result += reverseAlienAlphabet[char];
+                } else if (char === '\n') {
+                    result += '\n';
+                } else {
+                    // Для символов, которых нет в словаре, оставляем как есть
+                    result += char;
+                }
+            }
+            
+            return result;
+        }
+        
+        // Проверка, является ли текст инопланетным
+        function isAlienText(text) {
+            // Проверяем наличие инопланетных символов в тексте
+            const alienChars = Object.values(alienAlphabet).join('');
+            const alienRegex = new RegExp(`[${alienChars.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}]`);
+            return alienRegex.test(text);
+        }
+        
         // Сохранение в историю
-        function saveToHistory(original, translation) {
+        function saveToHistory(original, translation, direction) {
             const historyList = document.getElementById('history-list');
             const historyItem = document.createElement('div');
             historyItem.className = 'history-item';
             
             // Ограничиваем длину текста для отображения
-            const shortOriginal = original.length > 30 ? original.substring(0, 30) + '...' : original;
-            const shortTranslation = translation.length > 30 ? translation.substring(0, 30) + '...' : translation;
+            const shortOriginal = original.length > 25 ? original.substring(0, 25) + '...' : original;
+            const shortTranslation = translation.length > 25 ? translation.substring(0, 25) + '...' : translation;
             
-            historyItem.innerHTML = `<strong>${shortOriginal}</strong> → ${shortTranslation}`;
+            const directionText = direction ? '→ иноп.' : '← русск.';
+            
+            historyItem.innerHTML = `
+                <div>
+                    <strong>${shortOriginal}</strong> → ${shortTranslation}
+                </div>
+                <div class="history-direction">${directionText}</div>
+            `;
             
             // Добавляем в начало списка
             if (historyList.firstChild) {
@@ -522,8 +796,8 @@
                 historyList.appendChild(historyItem);
             }
             
-            // Ограничиваем историю 5 последними переводами
-            while (historyList.children.length > 5) {
+            // Ограничиваем историю 7 последними переводами
+            while (historyList.children.length > 7) {
                 historyList.removeChild(historyList.lastChild);
             }
             
@@ -532,11 +806,12 @@
             history.unshift({
                 original: original,
                 translation: translation,
+                direction: direction,
                 timestamp: new Date().toLocaleString()
             });
             
-            // Сохраняем только последние 10 записей
-            if (history.length > 10) {
+            // Сохраняем только последние 15 записей
+            if (history.length > 15) {
                 history.pop();
             }
             
@@ -552,10 +827,18 @@
                 const historyItem = document.createElement('div');
                 historyItem.className = 'history-item';
                 
-                const shortOriginal = item.original.length > 30 ? item.original.substring(0, 30) + '...' : item.original;
-                const shortTranslation = item.translation.length > 30 ? item.translation.substring(0, 30) + '...' : item.translation;
+                const shortOriginal = item.original.length > 25 ? item.original.substring(0, 25) + '...' : item.original;
+                const shortTranslation = item.translation.length > 25 ? item.translation.substring(0, 25) + '...' : item.translation;
                 
-                historyItem.innerHTML = `<strong>${shortOriginal}</strong> → ${shortTranslation}`;
+                const directionText = item.direction ? '→ иноп.' : '← русск.';
+                
+                historyItem.innerHTML = `
+                    <div>
+                        <strong>${shortOriginal}</strong> → ${shortTranslation}
+                    </div>
+                    <div class="history-direction">${directionText}</div>
+                `;
+                
                 historyList.appendChild(historyItem);
             });
         }
@@ -571,6 +854,9 @@
             const outputText = document.getElementById('output-text');
             const translateBtn = document.getElementById('translate-btn');
             const clearBtn = document.getElementById('clear-btn');
+            const reverseBtn = document.getElementById('reverse-btn');
+            const toAlienBtn = document.getElementById('to-alien-btn');
+            const fromAlienBtn = document.getElementById('from-alien-btn');
             
             // Обработчик кнопки перевода
             translateBtn.addEventListener('click', function() {
@@ -578,25 +864,50 @@
                 
                 if (text) {
                     // Анимация кнопки
+                    const originalText = translateBtn.innerHTML;
                     translateBtn.innerHTML = '<i class="fas fa-satellite"></i> Перевод...';
                     translateBtn.disabled = true;
                     
                     // Имитация задержки перевода
                     setTimeout(() => {
-                        const translation = translateToAlien(text);
-                        outputText.textContent = translation;
-                        outputText.style.color = '#c4b5fd';
+                        let translation;
+                        
+                        if (translationDirection) {
+                            // Перевод на инопланетный
+                            translation = translateToAlien(text);
+                            outputText.textContent = translation;
+                            outputText.style.color = '#c4b5fd';
+                            showNotification('Текст успешно переведен на инопланетный язык!', 'success');
+                        } else {
+                            // Перевод на русский
+                            if (isAlienText(text)) {
+                                translation = translateFromAlien(text);
+                                outputText.textContent = translation;
+                                outputText.style.color = '#6ee7b7';
+                                showNotification('Инопланетный текст успешно расшифрован!', 'success');
+                            } else {
+                                outputText.textContent = 'Текст не похож на инопланетный. Попробуйте перевести на инопланетный язык сначала.';
+                                outputText.style.color = '#fca5a5';
+                                showNotification('Ошибка: текст не похож на инопланетный', 'error');
+                                
+                                // Восстанавливаем кнопку
+                                translateBtn.innerHTML = originalText;
+                                translateBtn.disabled = false;
+                                return;
+                            }
+                        }
                         
                         // Сохраняем в историю
-                        saveToHistory(text, translation);
+                        saveToHistory(text, translation, translationDirection);
                         
                         // Возвращаем исходный вид кнопки
-                        translateBtn.innerHTML = '<i class="fas fa-language"></i> Перевести';
+                        translateBtn.innerHTML = originalText;
                         translateBtn.disabled = false;
-                    }, 800);
+                    }, 600);
                 } else {
                     outputText.textContent = 'Введите текст для перевода!';
                     outputText.style.color = '#fca5a5';
+                    showNotification('Введите текст для перевода', 'error');
                 }
             });
             
@@ -604,8 +915,50 @@
             clearBtn.addEventListener('click', function() {
                 inputText.value = '';
                 outputText.textContent = 'Перевод появится здесь...';
-                outputText.style.color = '#c4b5fd';
+                outputText.style.color = translationDirection ? '#c4b5fd' : '#6ee7b7';
                 inputText.focus();
+                showNotification('Текстовые поля очищены', 'info');
+            });
+            
+            // Обработчик кнопки изменения направления
+            reverseBtn.addEventListener('click', function() {
+                // Меняем направление
+                translationDirection = !translationDirection;
+                
+                // Обновляем интерфейс
+                updateInterfaceForDirection();
+                
+                // Меняем местами текст в полях, если там есть данные
+                const input = inputText.value.trim();
+                const output = outputText.textContent.trim();
+                
+                if (input && output && output !== 'Перевод появится здесь...' && output !== 'Введите текст для перевода!') {
+                    inputText.value = output;
+                    outputText.textContent = 'Перевод появится здесь...';
+                    
+                    // Определяем направление для уведомления
+                    const directionText = translationDirection ? 'на инопланетный' : 'на русский';
+                    showNotification(`Направление перевода изменено на "${directionText}"`, 'info');
+                } else {
+                    showNotification(`Направление перевода изменено`, 'info');
+                }
+            });
+            
+            // Обработчики кнопок направления
+            toAlienBtn.addEventListener('click', function() {
+                if (!translationDirection) {
+                    translationDirection = true;
+                    updateInterfaceForDirection();
+                    showNotification('Направление перевода: с русского на инопланетный', 'info');
+                }
+            });
+            
+            fromAlienBtn.addEventListener('click', function() {
+                if (translationDirection) {
+                    translationDirection = false;
+                    updateInterfaceForDirection();
+                    showNotification('Направление перевода: с инопланетного на русский', 'info');
+                }
             });
             
             // Автоперевод при загрузке страницы
@@ -620,6 +973,22 @@
             inputText.addEventListener('keydown', function(e) {
                 if (e.ctrlKey && e.key === 'Enter') {
                     translateBtn.click();
+                }
+            });
+            
+            // Автоматическое определение направления при вводе текста
+            inputText.addEventListener('input', function() {
+                const text = inputText.value.trim();
+                if (text.length > 10) {
+                    const isAlien = isAlienText(text);
+                    
+                    // Если направление не соответствует тексту, предлагаем изменить
+                    if (isAlien && translationDirection) {
+                        // Показываем подсказку
+                        showNotification('Обнаружен инопланетный текст. Рекомендуем переключить направление перевода.', 'info');
+                    } else if (!isAlien && !translationDirection && text.length > 5) {
+                        showNotification('Обнаружен русский текст. Рекомендуем переключить направление перевода.', 'info');
+                    }
                 }
             });
         });
