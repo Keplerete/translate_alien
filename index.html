@@ -19,6 +19,98 @@
             overflow: hidden;
         }
 
+        .scene {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+            background: radial-gradient(circle at 20% 10%, #11254d 0%, #0d0d1a 40%, #070710 100%);
+        }
+
+        .blue-sun {
+            position: absolute;
+            width: 230px;
+            height: 230px;
+            right: 8%;
+            top: 6%;
+            border-radius: 50%;
+            background: radial-gradient(circle, #9ef7ff 0%, #3fc5ff 45%, rgba(63, 197, 255, 0) 72%);
+            filter: blur(1px);
+            box-shadow: 0 0 90px #3fc5ff99;
+        }
+
+        .planet {
+            position: absolute;
+            width: 350px;
+            height: 350px;
+            left: -90px;
+            bottom: -160px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #8cf8ff 0%, #2365a2 45%, #0a2444 75%);
+            box-shadow: inset -25px -35px 70px rgba(2, 8, 22, 0.9), 0 0 70px rgba(58, 150, 255, 0.45);
+        }
+
+        .city {
+            position: absolute;
+            width: 220px;
+            height: 120px;
+            left: 40px;
+            bottom: 110px;
+            background: linear-gradient(to top, #03111f 0%, #0d325a 100%);
+            clip-path: polygon(0% 100%, 0% 72%, 8% 72%, 8% 54%, 18% 54%, 18% 66%, 28% 66%, 28% 40%, 36% 40%, 36% 58%, 44% 58%, 44% 46%, 54% 46%, 54% 62%, 62% 62%, 62% 35%, 70% 35%, 70% 55%, 80% 55%, 80% 42%, 90% 42%, 90% 70%, 100% 70%, 100% 100%);
+            box-shadow: 0 0 18px rgba(97, 207, 255, 0.6);
+        }
+
+        .constellation {
+            position: absolute;
+            top: 14%;
+            left: 18%;
+            width: 300px;
+            height: 180px;
+            transform: rotate(-10deg) perspective(600px) rotateX(18deg);
+        }
+
+        .constellation::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 5% 72%, #a7ebff 0 3px, transparent 4px),
+                radial-gradient(circle at 19% 42%, #a7ebff 0 3px, transparent 4px),
+                radial-gradient(circle at 35% 63%, #a7ebff 0 3px, transparent 4px),
+                radial-gradient(circle at 56% 26%, #a7ebff 0 3px, transparent 4px),
+                radial-gradient(circle at 78% 52%, #a7ebff 0 3px, transparent 4px),
+                radial-gradient(circle at 94% 19%, #a7ebff 0 3px, transparent 4px),
+                linear-gradient(120deg, transparent 23%, #9cdfff 24% 25%, transparent 26%),
+                linear-gradient(15deg, transparent 33%, #9cdfff 34% 35%, transparent 36%),
+                linear-gradient(130deg, transparent 47%, #9cdfff 48% 49%, transparent 50%),
+                linear-gradient(45deg, transparent 61%, #9cdfff 62% 63%, transparent 64%),
+                linear-gradient(150deg, transparent 79%, #9cdfff 80% 81%, transparent 82%);
+            filter: drop-shadow(0 0 7px #9cdfff);
+            opacity: 0.85;
+        }
+
+        .stars {
+            position: absolute;
+            inset: 0;
+            background-image:
+                radial-gradient(2px 2px at 20px 50px, #ffffffaa, transparent),
+                radial-gradient(2px 2px at 180px 120px, #ffffff90, transparent),
+                radial-gradient(1px 1px at 390px 40px, #ffffffaa, transparent),
+                radial-gradient(2px 2px at 560px 180px, #ffffff80, transparent),
+                radial-gradient(1px 1px at 760px 90px, #ffffff99, transparent),
+                radial-gradient(2px 2px at 980px 140px, #ffffffaa, transparent),
+                radial-gradient(1px 1px at 1240px 200px, #ffffff88, transparent);
+            animation: twinkle 8s linear infinite;
+        }
+
+        @keyframes twinkle {
+            0%,
+            100% { opacity: 0.65; }
+            50% { opacity: 1; }
+        }
+
         .container {
             border: 2px solid #00ff9d;
             background-color: rgba(10, 10, 20, 0.9);
@@ -29,6 +121,19 @@
             width: 90%;
             z-index: 1;
             text-align: center;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .output-controls {
+            grid-template-columns: 1fr;
+            margin-top: 10px;
+            margin-bottom: 0;
         }
 
         h2 {
@@ -53,12 +158,16 @@
             background: #00ff9d;
             color: #0d0d1a;
             border: none;
-            padding: 15px;
+            padding: 12px;
             cursor: pointer;
             font-weight: bold;
             text-transform: uppercase;
             width: 100%;
             transition: 0.3s;
+        }
+
+        .translate-btn {
+            margin-bottom: 20px;
         }
 
         button:hover {
@@ -81,11 +190,28 @@
     </style>
 </head>
 <body>
+<div class="scene">
+    <div class="stars"></div>
+    <div class="blue-sun"></div>
+    <div class="constellation"></div>
+    <div class="planet"></div>
+    <div class="city"></div>
+</div>
 
 <div class="container">
     <h2>ZETA RETICULI COMM-LINK</h2>
     <p style="font-size: 0.8em; color: #00d4ff;">СТАТУС: СВЯЗЬ СТАБИЛЬНА</p>
     <textarea id="inputText" rows="3" placeholder="Введите текст для перевода..."></textarea>
+    <div class="controls">
+        <button onclick="pasteInput()">ВСТАВИТЬ</button>
+        <button onclick="clearInput()">ОЧИСТИТЬ</button>
+        <button onclick="copyInput()">СКОПИРОВАТЬ</button>
+    </div>
+    <button class="translate-btn" onclick="translateText()">ПЕРЕВЕСТИ</button>
+    <div id="output">Результат перевода появится здесь.</div>
+    <div class="controls output-controls">
+        <button onclick="copyOutput()">СКОПИРОВАТЬ ПЕРЕВОД</button>
+    </div>
     <button onclick="translateText()">ПЕРЕВЕСТИ</button>
     <div id="output">Результат перевода появится здесь.</div>
 </div>
@@ -126,6 +252,44 @@
         output.innerText = 'Результат перевода: ' + translatedTokens.join('');
     }
 
+    function copyTextToClipboard(text, successMessage) {
+        if (!text.trim()) {
+            document.getElementById('output').innerText = 'Нечего копировать.';
+            return;
+        }
+
+        navigator.clipboard.writeText(text)
+            .then(() => {
+                document.getElementById('output').innerText = successMessage;
+            })
+            .catch(() => {
+                document.getElementById('output').innerText = 'Не удалось скопировать автоматически.';
+            });
+    }
+
+    function copyInput() {
+        const text = document.getElementById('inputText').value;
+        copyTextToClipboard(text, 'Текст из поля ввода скопирован.');
+    }
+
+    function copyOutput() {
+        const text = document.getElementById('output').innerText.replace('Результат перевода: ', '');
+        copyTextToClipboard(text, 'Перевод скопирован.');
+    }
+
+    async function pasteInput() {
+        try {
+            const text = await navigator.clipboard.readText();
+            document.getElementById('inputText').value = text;
+        } catch {
+            document.getElementById('output').innerText = 'Не удалось вставить из буфера обмена.';
+        }
+    }
+
+    function clearInput() {
+        document.getElementById('inputText').value = '';
+    }
+
     // Функция всегда выдаёт одинаковый результат для одного и того же слова
     function generateConsistentAlienWord(word, originalLength) {
         let hash = 0;
@@ -149,4 +313,3 @@
 
 </body>
 </html>
-
