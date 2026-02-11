@@ -84,10 +84,10 @@
 
 <div class="container">
     <h2>ZETA RETICULI COMM-LINK</h2>
-    <p style="font-size: 0.8em; color: #00d4ff;">СТАТУС: СВЯЗЬ УСТАНОВЛЕНА</p>
-    <textarea id="inputText" rows="3" placeholder="Введите текст..."></textarea>
+    <p style="font-size: 0.8em; color: #00d4ff;">СТАТУС: СВЯЗЬ СТАБИЛЬНА</p>
+    <textarea id="inputText" rows="3" placeholder="Введите текст для перевода..."></textarea>
     <button onclick="translateText()">ПЕРЕВЕСТИ</button>
-    <div id="output">Результат: ...</div>
+    <div id="output">Результат перевода появится здесь.</div>
 </div>
 
 <script>
@@ -100,36 +100,49 @@
 
     function translateText() {
         const input = document.getElementById('inputText').value.trim();
-        if (!input) return;
+        const output = document.getElementById('output');
 
-        // Разбиваем на слова
-        const words = input.toLowerCase().split(/\s+/);
-        
-        const translatedWords = words.map(word => {
-            return generateConsistentAlienWord(word);
+        if (!input) {
+            output.innerText = 'Введите текст, чтобы начать перевод.';
+            return;
+        }
+
+        const tokens = input.split(/(\s+)/);
+        const translatedTokens = tokens.map(token => {
+            if (/^\s+$/.test(token)) {
+                return token;
+            }
+
+            const cleanToken = token.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+            if (!cleanToken) {
+                return token;
+            }
+
+            const alienWord = generateConsistentAlienWord(cleanToken, token.length);
+            const punctuation = token.match(/[^\p{L}\p{N}]+$/gu);
+            return punctuation ? alienWord + punctuation.join('') : alienWord;
         });
 
-        // Соединяем слова через специальный инопланетный разделитель "⁛"
-        document.getElementById('output').innerText = "Результат: " + translatedWords.join(' ⁛ ');
+        output.innerText = 'Результат перевода: ' + translatedTokens.join('');
     }
 
-    // Функция, которая ВСЕГДА выдает один и тот же результат для одного и того же слова
-    function generateConsistentAlienWord(word) {
+    // Функция всегда выдаёт одинаковый результат для одного и того же слова
+    function generateConsistentAlienWord(word, originalLength) {
         let hash = 0;
         for (let i = 0; i < word.length; i++) {
-            // Создаем числовой код на основе букв слова
             hash = word.charCodeAt(i) + ((hash << 5) - hash);
         }
 
-        let result = "";
-        // Длина инопланетного слова зависит от длины оригинала (минимум 3 символа)
-        const len = Math.max(3, (Math.abs(hash) % 5) + 3); 
-        
+        let result = '';
+        // Делаем перевод компактнее: примерно 75% от длины исходного слова
+        const baseLength = Math.ceil(Math.max(2, originalLength * 0.75));
+        const len = Math.min(6, baseLength + (Math.abs(hash) % 2));
+
         for (let j = 0; j < len; j++) {
-            // Выбираем символ из базы, используя "соль" индекса
-            const index = Math.abs(hash + j) % symbols.length;
+            const index = Math.abs(hash + j * 3) % symbols.length;
             result += symbols[index];
         }
+
         return result;
     }
 </script>
