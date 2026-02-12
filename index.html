@@ -257,65 +257,22 @@
         }
 
         const tokens = input.split(/(\s+)/);
-        const translatedTokens = tokens.map(token => translateToken(token));
+        const translatedTokens = tokens.map(token => {
+            if (/^\s+$/.test(token)) {
+                return token;
+            }
+
+            const cleanToken = token.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+            if (!cleanToken) {
+                return token;
+            }
+
+            const alienWord = generateConsistentAlienWord(cleanToken, token.length);
+            const punctuation = token.match(/[^\p{L}\p{N}]+$/gu);
+            return punctuation ? alienWord + punctuation.join('') : alienWord;
+        });
+
         output.innerText = 'Результат перевода: ' + translatedTokens.join('');
-    }
-
-    function translateToken(token) {
-        if (/^\s+$/.test(token)) {
-            return token;
-        }
-
-        const punctuation = token.match(/[^\p{L}\p{N}]+$/gu);
-        const suffix = punctuation ? punctuation.join('') : '';
-        const core = token.replace(/[^\p{L}\p{N}]+$/gu, '');
-
-        if (!core) {
-            return token;
-        }
-
-        // Цифры переводим по фиксированным знакам
-        if (/^\d+$/.test(core)) {
-            return core.split('').map(d => digitMap[d] || d).join('') + suffix;
-        }
-
-        const cleanToken = core.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
-        if (!cleanToken) {
-            return token;
-        }
-
-        // Частицы/служебные слова делаем короткими, ближе к китайскому стилю
-        if (functionWordMap[cleanToken]) {
-            return functionWordMap[cleanToken] + suffix;
-        }
-
-        const grammarBase = normalizeForChineseLikeGrammar(cleanToken);
-        const alienWord = generateConsistentAlienWord(grammarBase, core.length);
-        return alienWord + suffix;
-    }
-
-    function normalizeForChineseLikeGrammar(word) {
-        let normalized = word;
-
-        // Упрощаем формы глаголов: сводим к короткой основе + маркер действия
-        const verbEndings = ['ются', 'ются', 'ешь', 'ете', 'ут', 'ют', 'ем', 'им', 'ет', 'ит', 'ал', 'ала', 'али', 'ать', 'ять', 'ить'];
-        for (const ending of verbEndings) {
-            if (normalized.endsWith(ending) && normalized.length > ending.length + 1) {
-                normalized = normalized.slice(0, -ending.length) + '行';
-                break;
-            }
-        }
-
-        // Прилагательные/признаки — короткая основа + маркер свойства
-        const adjectiveEndings = ['ыми', 'ими', 'ого', 'его', 'ому', 'ему', 'ая', 'яя', 'ое', 'ее', 'ый', 'ий'];
-        for (const ending of adjectiveEndings) {
-            if (normalized.endsWith(ending) && normalized.length > ending.length + 1) {
-                normalized = normalized.slice(0, -ending.length) + '性';
-                break;
-            }
-        }
-
-        return normalized;
     }
 
     function copyTextToClipboard(text, successMessage) {
