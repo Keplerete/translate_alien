@@ -19,6 +19,98 @@
             overflow: hidden;
         }
 
+        .scene {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+            background: radial-gradient(circle at 20% 10%, #11254d 0%, #0d0d1a 40%, #070710 100%);
+        }
+
+        .blue-sun {
+            position: absolute;
+            width: 230px;
+            height: 230px;
+            right: 8%;
+            top: 6%;
+            border-radius: 50%;
+            background: radial-gradient(circle, #9ef7ff 0%, #3fc5ff 45%, rgba(63, 197, 255, 0) 72%);
+            filter: blur(1px);
+            box-shadow: 0 0 90px #3fc5ff99;
+        }
+
+        .planet {
+            position: absolute;
+            width: 350px;
+            height: 350px;
+            left: -90px;
+            bottom: -160px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #8cf8ff 0%, #2365a2 45%, #0a2444 75%);
+            box-shadow: inset -25px -35px 70px rgba(2, 8, 22, 0.9), 0 0 70px rgba(58, 150, 255, 0.45);
+        }
+
+        .city {
+            position: absolute;
+            width: 220px;
+            height: 120px;
+            left: 40px;
+            bottom: 110px;
+            background: linear-gradient(to top, #03111f 0%, #0d325a 100%);
+            clip-path: polygon(0% 100%, 0% 72%, 8% 72%, 8% 54%, 18% 54%, 18% 66%, 28% 66%, 28% 40%, 36% 40%, 36% 58%, 44% 58%, 44% 46%, 54% 46%, 54% 62%, 62% 62%, 62% 35%, 70% 35%, 70% 55%, 80% 55%, 80% 42%, 90% 42%, 90% 70%, 100% 70%, 100% 100%);
+            box-shadow: 0 0 18px rgba(97, 207, 255, 0.6);
+        }
+
+        .constellation {
+            position: absolute;
+            top: 14%;
+            left: 18%;
+            width: 300px;
+            height: 180px;
+            transform: rotate(-10deg) perspective(600px) rotateX(18deg);
+        }
+
+        .constellation::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 5% 72%, #a7ebff 0 3px, transparent 4px),
+                radial-gradient(circle at 19% 42%, #a7ebff 0 3px, transparent 4px),
+                radial-gradient(circle at 35% 63%, #a7ebff 0 3px, transparent 4px),
+                radial-gradient(circle at 56% 26%, #a7ebff 0 3px, transparent 4px),
+                radial-gradient(circle at 78% 52%, #a7ebff 0 3px, transparent 4px),
+                radial-gradient(circle at 94% 19%, #a7ebff 0 3px, transparent 4px),
+                linear-gradient(120deg, transparent 23%, #9cdfff 24% 25%, transparent 26%),
+                linear-gradient(15deg, transparent 33%, #9cdfff 34% 35%, transparent 36%),
+                linear-gradient(130deg, transparent 47%, #9cdfff 48% 49%, transparent 50%),
+                linear-gradient(45deg, transparent 61%, #9cdfff 62% 63%, transparent 64%),
+                linear-gradient(150deg, transparent 79%, #9cdfff 80% 81%, transparent 82%);
+            filter: drop-shadow(0 0 7px #9cdfff);
+            opacity: 0.85;
+        }
+
+        .stars {
+            position: absolute;
+            inset: 0;
+            background-image:
+                radial-gradient(2px 2px at 20px 50px, #ffffffaa, transparent),
+                radial-gradient(2px 2px at 180px 120px, #ffffff90, transparent),
+                radial-gradient(1px 1px at 390px 40px, #ffffffaa, transparent),
+                radial-gradient(2px 2px at 560px 180px, #ffffff80, transparent),
+                radial-gradient(1px 1px at 760px 90px, #ffffff99, transparent),
+                radial-gradient(2px 2px at 980px 140px, #ffffffaa, transparent),
+                radial-gradient(1px 1px at 1240px 200px, #ffffff88, transparent);
+            animation: twinkle 8s linear infinite;
+        }
+
+        @keyframes twinkle {
+            0%,
+            100% { opacity: 0.65; }
+            50% { opacity: 1; }
+        }
+
         .container {
             border: 2px solid #00ff9d;
             background-color: rgba(10, 10, 20, 0.9);
@@ -29,6 +121,19 @@
             width: 90%;
             z-index: 1;
             text-align: center;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .output-controls {
+            grid-template-columns: 1fr;
+            margin-top: 10px;
+            margin-bottom: 0;
         }
 
         h2 {
@@ -53,12 +158,16 @@
             background: #00ff9d;
             color: #0d0d1a;
             border: none;
-            padding: 15px;
+            padding: 12px;
             cursor: pointer;
             font-weight: bold;
             text-transform: uppercase;
             width: 100%;
             transition: 0.3s;
+        }
+
+        .translate-btn {
+            margin-bottom: 20px;
         }
 
         button:hover {
@@ -81,59 +190,192 @@
     </style>
 </head>
 <body>
+<div class="scene">
+    <div class="stars"></div>
+    <div class="blue-sun"></div>
+    <div class="constellation"></div>
+    <div class="planet"></div>
+    <div class="city"></div>
+</div>
 
 <div class="container">
     <h2>ZETA RETICULI COMM-LINK</h2>
-    <p style="font-size: 0.8em; color: #00d4ff;">СТАТУС: СВЯЗЬ УСТАНОВЛЕНА</p>
-    <textarea id="inputText" rows="3" placeholder="Введите текст..."></textarea>
-    <button onclick="translateText()">ПЕРЕВЕСТИ</button>
-    <div id="output">Результат: ...</div>
+    <p style="font-size: 0.8em; color: #00d4ff;">СТАТУС: СВЯЗЬ СТАБИЛЬНА</p>
+    <textarea id="inputText" rows="3" placeholder="Введите текст для перевода..."></textarea>
+    <div class="controls">
+        <button onclick="pasteInput()">ВСТАВИТЬ</button>
+        <button onclick="clearInput()">ОЧИСТИТЬ</button>
+        <button onclick="copyInput()">СКОПИРОВАТЬ</button>
+    </div>
+    <button class="translate-btn" onclick="translateText()">ПЕРЕВЕСТИ</button>
+    <div id="output">Результат перевода появится здесь.</div>
+    <div class="controls output-controls">
+        <button onclick="copyOutput()">СКОПИРОВАТЬ ПЕРЕВОД</button>
+    </div>
 </div>
 
 <script>
     // Массив уникальных символов (неизменная база)
-    const symbols = [
-        '⏀','⏁','⏂','⏃','⏄','⏅','⏆','⏇','⏈','⏉','⏊','⏋','⏌','⎍','⎎','⎏',
-        '⎐','⎑','⎒','⎓','⎔','⎕','⎖','⎗','⎘','⎙','ℵ','ℷ','ℸ','⌬','❡','❢',
-        '⦿','⦾','⁍','⁕','⁖','⁘','⁙','⁚','⁛','⁜','⁝','⁞','⩔','⩕','⩖','⩗'
-    ];
+    const symbolText = `𒀀𒀁𒀂𒀃𒀄𒀅𒀆𒀇𒀈𒀉𒀊𒀋𒀌𒀍𒀎𒀏𒀐𒀑𒀒𒀓𒀔𒀕𒀖𒀗𒀘𒀙𒀚𒀛𒀜𒀝𒀞𒀟𒀠𒀡𒀢𒀣𒀤𒀥𒀦𒀧𒀨𒀩𒀪𒀫𒀬𒀭𒀮𒀯𒀰𒀱𒀲𒀳𒀴𒀵𒀶𒀷𒀸𒀹𒀺𒀻𒀼𒀽𒀾𒀿𒁀𒁁𒁂𒁃𒁄𒁅𒁆𒁇𒁈𒁉𒁊𒁋𒁌𒁍𒁎𒁏𒁐𒁑𒁒𒁓𒁔𒁕𒁖𒁗𒁘𒁙𒁚𒁛𒁜𒁝𒁞𒁟𒁠𒁡𒁢𒁣𒁤𒁥𒁦𒁧𒁨𒁩𒁪𒁫𒁬𒁭𒁮𒁯𒁰𒁱𒁲𒁳𒁴𒁵𒁶𒁷𒁸𒁹𒁺𒁻𒁼𒁽𒁾𒁿𒂀𒂁𒂂𒂃𒂄𒂅𒂆𒂇𒂈𒂉𒂊𒂋𒂌𒂍𒂎𒂏𒂐𒂑𒂒𒂓𒂔𒂕𒂖𒂗𒂘𒂙𒂚𒂛𒂜𒂝𒂞𒂟𒂠𒂡𒂢𒂣𒂤𒂥𒂦𒂧𒂨𒂩𒂪𒂫𒂬𒂭𒂮𒂯𒂰𒂱𒂲𒂳𒂴𒂵𒂶𒂷𒂸𒂹𒂺𒂻𒂼𒂽𒂾𒂿𒃀𒃁𒃂𒃃𒃄𒃅𒃆𒃇𒃈𒃉𒃊𒃋𒃌𒃍𒃎𒃏𒃐𒃑𒃒𒃓𒃔𒃕𒃖𒃗𒃘𒃙𒃚𒃛𒃜𒃝𒃞𒃟𒃠𒃡𒃢𒃣𒃤𒃥𒃦𒃧𒃨𒃩𒃪𒃫𒃬𒃭𒃮𒃯𒃰𒃱𒃲𒃳𒃴𒃵𒃶𒃷𒃸𒃹𒃺𒃻𒃼𒃽𒃾𒃿𒄀𒄁𒄂𒄃𒄄𒄅𒄆𒄇𒄈𒄉𒄊𒄋𒄌𒄍𒄎𒄏𒄐𒄑𒄒𒄓𒄔𒄕𒄖𒄗𒄘𒄙𒄚𒄛𒄜𒄝𒄞𒄟𒄠𒄡𒄢𒄣𒄤𒄥𒄦𒄧𒄨𒄩𒄪𒄫𒄬𒄭𒄮𒄯𒄰𒄱𒄲𒄳𒄴𒄵𒄶𒄷𒄸𒄹𒄺𒄻𒄼𒄽𒄾𒄿𒅀𒅁𒅂𒅃𒅄𒅅𒅆𒅇𒅈𒅉𒅊𒅋𒅌𒅍𒅎𒅏𒅐𒅑𒅒𒅓𒅔𒅕𒅖𒅗𒅘𒅙𒅚𒅛𒅜𒅝𒅞𒅟𒅠𒅡𒅢𒅣𒅤𒅥𒅦𒅧𒅨𒅩𒅪𒅫𒅬𒅭𒅮𒅯𒅰𒅱𒅲𒅳𒅴𒅵𒅶𒅷𒅸𒅹𒅺𒅻𒅼𒅽𒅾𒅿𒆀𒆁𒆂𒆃𒆄𒆅𒆆𒆇𒆈𒆉𒆊𒆋𒆌𒆍𒆎𒆏𒆐𒆑𒆒𒆓𒆔𒆕𒆖𒆗𒆘𒆙𒆚𒆛𒆜𒆝𒆞𒆟𒆠𒆡𒆢𒆣𒆤𒆥𒆦𒆧𒆨𒆩𒆪𒆫𒆬𒆭𒆮𒆯𒆰𒆱𒆲𒆳𒆴𒆵𒆶𒆷𒆸𒆹𒆺𒆻𒆼𒆽𒆾𒆿𒇀𒇁𒇂𒇃𒇄𒇅𒇆𒇇𒇈𒇉𒇊𒇋𒇌𒇍𒇎𒇏𒇐𒇑𒇒𒇓𒇔𒇕𒇖𒇗𒇘𒇙𒇚𒇛𒇜𒇝𒇞𒇟𒇠𒇡𒇢𒇣𒇤𒇥𒇦𒇧𒇨𒇩𒇪𒇫𒇬𒇭𒇮𒇯𒇰𒇱𒇲𒇳𒇴𒇵𒇶𒇷𒇸𒇹𒇺𒇻𒇼𒇽𒇾𒇿𒈀𒈁𒈂𒈃𒈄𒈅𒈆𒈇𒈈𒈉𒈊𒈋𒈌𒈍𒈎𒈏𒈐𒈑𒈒𒈓𒈔𒈕𒈖𒈗𒈘𒈙𒈚𒈛𒈜𒈝𒈞𒈟𒈠𒈡𒈢𒈣𒈤𒈥𒈦𒈧𒈨𒈩𒈪𒈫𒈬𒈭𒈮𒈯𒈰𒈱𒈲𒈳𒈴𒈵𒈶𒈷𒈸𒈹𒈺𒈻𒈼𒈽𒈾𒈿𒉀𒉁𒉂𒉃𒉄𒉅𒉆𒉇𒉈𒉉𒉊𒉋𒉌𒉍𒉎𒉏𒉐𒉑𒉒𒉓𒉔𒉕𒉖𒉗𒉘𒉙𒉚𒉛𒉜𒉝𒉞𒉟𒉠𒉡𒉢𒉣𒉤𒉥𒉦𒉧𒉨𒉩𒉪𒉫𒉬𒉭𒉮𒉯𒉰𒉱𒉲𒉳𒉴𒉵𒉶𒉷𒉸𒉹𒉺𒉻𒉼𒉽𒉾𒉿𒊀𒊁𒊂𒊃𒊄𒊅𒊆𒊇𒊈𒊉𒊊𒊋𒊌𒊍𒊎𒊏𒊐𒊑𒊒𒊓𒊔𒊕𒊖𒊗𒊘𒊙𒊚𒊛𒊜𒊝𒊞𒊟𒊠𒊡𒊢𒊣𒊤𒊥𒊦𒊧𒊨𒊩𒊪𒊫𒊬𒊭𒊮𒊯𒊰𒊱𒊲𒊳𒊴𒊵𒊶𒊷𒊸𒊹𒊺𒊻𒊼𒊽𒊾𒊿𒋀𒋁𒋂𒋃𒋄𒋅𒋆𒋇𒋈𒋉𒋊𒋋𒋌𒋍𒋎𒋏𒋐𒋑𒋒𒋓𒋔𒋕𒋖𒋗𒋘𒋙𒋚𒋛𒋜𒋝𒋞𒋟𒋠𒋡𒋢𒋣𒋤𒋥𒋦𒋧𒋨𒋩𒋪𒋫𒋬𒋭𒋮𒋯𒋰𒋱𒋲𒋳𒋴𒋵𒋶𒋷𒋸𒋹𒋺𒋻𒋼𒋽𒋾𒋿𒌀𒌁𒌂𒌃𒌄𒌅𒌆𒌇𒌈𒌉𒌊𒌋𒌌𒌍𒌎𒌏𒌐𒌑𒌒𒌓𒌔𒌕𒌖𒌗𒌘𒌙𒌚𒌛𒌜𒌝𒌞𒌟𒌠𒌡𒌢𒌣𒌤𒌥𒌦𒌧𒌨𒌩𒌪𒌫𒌬𒌭𒌮𒌯𒌰𒌱𒌲𒌳𒌴𒌵𒌶𒌷𒌸𒌹𒌺𒌻𒌼𒌽𒌾𒌿𒍀𒍁𒍂𒍃𒍄𒍅𒍆𒍇𒍈𒍉𒍊𒍋𒍌𒍍𒍎𒍏𒍐𒍑𒍒𒍓𒍔𒍕𒍖𒍗𒍘𒍙𒍚𒍛𒍜𒍝𒍞𒍟𒍠𒍡𒍢𒍣𒍤𒍥𒍦𒍧𒍨𒍩𒍪𒍫𒍬𒍭𒍮𒍯𒍰𒍱𒍲𒍳𒍴𒍵𒍶𒍷𒍸𒍹𒍺𒍻𒍼𒍽𒍾𒍿𒎀𒎁𒎂𒎃𒎄𒎅𒎆𒎇𒎈𒎉𒎊𒎋𒎌𒎍𒎎𒎏𒎐𒎑𒎒𒎓𒎔𒎕𒎖𒎗𒎘𒎙`;
+    const symbols = Array.from(symbolText);
+    const digitMap = {
+        '0': '𒐞',
+        '1': '𒐕',
+        '2': '𒐖',
+        '3': '𒐗',
+        '4': '𒐘',
+        '5': '𒐙',
+        '6': '𒐚',
+        '7': '𒐛',
+        '8': '𒐜',
+        '9': '𒐝'
+    };
+
+    const functionWordMap = {
+        'и': '𒐀',
+        'а': '𒐁',
+        'но': '𒐂',
+        'не': '𒐃',
+        'в': '𒐄',
+        'на': '𒐅',
+        'с': '𒐆',
+        'к': '𒐇',
+        'у': '𒐈',
+        'по': '𒐉',
+        'из': '𒐊',
+        'что': '𒐋',
+        'это': '𒐌'
+    };
 
     function translateText() {
         const input = document.getElementById('inputText').value.trim();
-        if (!input) return;
+        const output = document.getElementById('output');
 
-        // Разбиваем на слова
-        const words = input.toLowerCase().split(/\s+/);
-        
-        const translatedWords = words.map(word => {
-            return generateConsistentAlienWord(word);
-        });
+        if (!input) {
+            output.innerText = 'Введите текст, чтобы начать перевод.';
+            return;
+        }
 
-        // Соединяем слова через специальный инопланетный разделитель "⁛"
-        document.getElementById('output').innerText = "Результат: " + translatedWords.join(' ⁛ ');
+        const tokens = input.split(/(\s+)/);
+        const translatedTokens = tokens.map(token => translateToken(token));
+        output.innerText = 'Результат перевода: ' + translatedTokens.join('');
     }
 
-    // Функция, которая ВСЕГДА выдает один и тот же результат для одного и того же слова
-    function generateConsistentAlienWord(word) {
+    function translateToken(token) {
+        if (/^\s+$/.test(token)) {
+            return token;
+        }
+
+        const punctuation = token.match(/[^\p{L}\p{N}]+$/gu);
+        const suffix = punctuation ? punctuation.join('') : '';
+        const core = token.replace(/[^\p{L}\p{N}]+$/gu, '');
+
+        if (!core) {
+            return token;
+        }
+
+        // Цифры переводим по фиксированным знакам
+        if (/^\d+$/.test(core)) {
+            return core.split('').map(d => digitMap[d] || d).join('') + suffix;
+        }
+
+        const cleanToken = core.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+        if (!cleanToken) {
+            return token;
+        }
+
+        // Частицы/служебные слова делаем короткими, ближе к китайскому стилю
+        if (functionWordMap[cleanToken]) {
+            return functionWordMap[cleanToken] + suffix;
+        }
+
+        const grammarBase = normalizeForChineseLikeGrammar(cleanToken);
+        const alienWord = generateConsistentAlienWord(grammarBase, core.length);
+        return alienWord + suffix;
+    }
+
+    function normalizeForChineseLikeGrammar(word) {
+        let normalized = word;
+
+        // Упрощаем формы глаголов: сводим к короткой основе + маркер действия
+        const verbEndings = ['ются', 'ются', 'ешь', 'ете', 'ут', 'ют', 'ем', 'им', 'ет', 'ит', 'ал', 'ала', 'али', 'ать', 'ять', 'ить'];
+        for (const ending of verbEndings) {
+            if (normalized.endsWith(ending) && normalized.length > ending.length + 1) {
+                normalized = normalized.slice(0, -ending.length) + '行';
+                break;
+            }
+        }
+
+        // Прилагательные/признаки — короткая основа + маркер свойства
+        const adjectiveEndings = ['ыми', 'ими', 'ого', 'его', 'ому', 'ему', 'ая', 'яя', 'ое', 'ее', 'ый', 'ий'];
+        for (const ending of adjectiveEndings) {
+            if (normalized.endsWith(ending) && normalized.length > ending.length + 1) {
+                normalized = normalized.slice(0, -ending.length) + '性';
+                break;
+            }
+        }
+
+        return normalized;
+    }
+
+    function copyTextToClipboard(text, successMessage) {
+        if (!text.trim()) {
+            document.getElementById('output').innerText = 'Нечего копировать.';
+            return;
+        }
+
+        navigator.clipboard.writeText(text)
+            .then(() => {
+                document.getElementById('output').innerText = successMessage;
+            })
+            .catch(() => {
+                document.getElementById('output').innerText = 'Не удалось скопировать автоматически.';
+            });
+    }
+
+    function copyInput() {
+        const text = document.getElementById('inputText').value;
+        copyTextToClipboard(text, 'Текст из поля ввода скопирован.');
+    }
+
+    function copyOutput() {
+        const text = document.getElementById('output').innerText.replace('Результат перевода: ', '');
+        copyTextToClipboard(text, 'Перевод скопирован.');
+    }
+
+    async function pasteInput() {
+        try {
+            const text = await navigator.clipboard.readText();
+            document.getElementById('inputText').value = text;
+        } catch {
+            document.getElementById('output').innerText = 'Не удалось вставить из буфера обмена.';
+        }
+    }
+
+    function clearInput() {
+        document.getElementById('inputText').value = '';
+    }
+
+    // Функция всегда выдаёт одинаковый результат для одного и того же слова
+    function generateConsistentAlienWord(word, originalLength) {
         let hash = 0;
         for (let i = 0; i < word.length; i++) {
-            // Создаем числовой код на основе букв слова
             hash = word.charCodeAt(i) + ((hash << 5) - hash);
         }
 
-        let result = "";
-        // Длина инопланетного слова зависит от длины оригинала (минимум 3 символа)
-        const len = Math.max(3, (Math.abs(hash) % 5) + 3); 
-        
+        let result = '';
+        // Делаем перевод компактнее: примерно 75% от длины исходного слова
+        const baseLength = Math.ceil(Math.max(2, originalLength * 0.75));
+        const len = Math.min(6, baseLength + (Math.abs(hash) % 2));
+
         for (let j = 0; j < len; j++) {
-            // Выбираем символ из базы, используя "соль" индекса
-            const index = Math.abs(hash + j) % symbols.length;
+            const index = Math.abs(hash + j * 3) % symbols.length;
             result += symbols[index];
         }
+
         return result;
     }
 </script>
 
 </body>
 </html>
-
